@@ -8,12 +8,12 @@
   http://livestreetguide.com/developer/PSNet/
 */
 
-class PluginSimplesearch_ModuleTopic_MapperTopic extends PluginSimplesearch_Inherit_ModuleTopic_MapperTopic {
+class PluginSimplesearch_ModuleTopic_MapperTopic extends PluginSimplesearch_Inherit_ModuleTopic_MapperTopic
+{
 
-  public function GetTopicTagsByLike ($sTag, $iLimit) {
-    return parent::GetTopicTagsByLike ('%' . $sTag, $iLimit);
-  }
+    public function GetTopicTagsByLike($sTag, $iLimit)
+    {
+        return parent::GetTopicTagsByLike('%' . $sTag, $iLimit);
+    }
 
 }
-
-?>

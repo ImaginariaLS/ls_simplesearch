@@ -8,7 +8,7 @@
   http://livestreetguide.com/developer/PSNet/
 */
 
-$config = array ();
+$config = array();
 
 // Минимальная длина поискового запроса (всего)
 $config ['Min_Length_Of_Search_Query'] = 5; // символов
@@ -97,43 +97,43 @@ $config ['Enable_Tags_Search'] = true;
 
 // Как выводить топики
 // по рейтингу топика, потом по его ИД, который также означает его "дальность" публикации.
-$config ['Topics_Order'] = array (
-                                  'topic_rating DESC',
-                                  'topic_id DESC'
-                                 );
+$config ['Topics_Order'] = array(
+    'topic_rating DESC',
+    'topic_id DESC'
+);
 
 // Как выводить комментарии
 // по рейтингу комментария, потом по его ИД, который также означает его "дальность" публикации
-$config ['Comments_Order'] = array (
-                                    'comment_rating DESC',
-                                    'comment_id DESC'
-                                   );
-                                   
+$config ['Comments_Order'] = array(
+    'comment_rating DESC',
+    'comment_id DESC'
+);
+
 // Как выводить людей :)
 // по рейтингу пользователя, потом по его силе
-$config ['People_Order'] = array (
-                                    'user_rating DESC',
-                                    'user_skill DESC'
-                                   );
-                                   
+$config ['People_Order'] = array(
+    'user_rating DESC',
+    'user_skill DESC'
+);
+
 // Как выводить список блогов
 // по рейтингу блога (позволит сначала показать коллективные блоги, у которых есть рейтинг т.к. персональные рейтинга не имеют),
 // потом по ИД блога, который также означает его "дальность" создания, потом по количеству топиков в блоге
-$config ['Blogs_Order'] = array (
-                                  'blog_rating DESC',
-                                  'blog_id DESC',
-                                  'blog_count_topic DESC'
-                                 );
+$config ['Blogs_Order'] = array(
+    'blog_rating DESC',
+    'blog_id DESC',
+    'blog_count_topic DESC'
+);
 
 //
 // --- Поиск по другим типам блогов ---
 // Позволяет включить поддержку поиска по топикам, которые созданы другими плагинами
 // Минимум - один тип блога
-$config ['Allowed_Blog_Types'] = array (
-  'personal',    // default blog type
-  'open',        // default blog type
-  'subcat',      // blog type of "aceblogextender" plugin for subcategories
-  'company',     // blog type of "companies" plugin
+$config ['Allowed_Blog_Types'] = array(
+    'personal',    // default blog type
+    'open',        // default blog type
+    'subcat',      // blog type of "aceblogextender" plugin for subcategories
+    'company',     // blog type of "companies" plugin
 );
 
 //
@@ -151,22 +151,20 @@ $config ['Show_Links_For_Other_SE'] = true;
 //
 // ---
 //
-                                   
+
 if ($config ['Enable_People_Search']) {
-  Config::Set ('block.rule_peoplesearch_info', array (
-    'action' => array (
-      'people',
-      'search' => array ('people')
-    ),
-    'blocks' => array ('right' => array (
-      'block.people.tpl' => array (
-        'params' => array ('plugin' => 'simplesearch'),
-        'priority' => 120
-      ),
-    )),
-  ));
+    Config::Set('block.rule_peoplesearch_info', array(
+        'action' => array(
+            'people',
+            'search' => array('people')
+        ),
+        'blocks' => array('right' => array(
+            'block.people.tpl' => array(
+                'params' => array('plugin' => 'simplesearch'),
+                'priority' => 120
+            ),
+        )),
+    ));
 }
 
 return $config;
-
-?>

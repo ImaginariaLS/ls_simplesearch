@@ -8,10 +8,12 @@
   http://livestreetguide.com/developer/PSNet/
 */
 
-class PluginSimplesearch_ModuleSimplesearch_MapperSimplesearch extends Mapper {
+class PluginSimplesearch_ModuleSimplesearch_MapperSimplesearch extends Mapper
+{
 
-  public function GetTopicsByQuery ($sQuery, $iPage, $iPerPage, $sSubQuery, $aClosedBlogsIdsForCurrentUser, $iBlogIdForSearch, $iFavoriteUserId) {
-    $sql = '
+    public function GetTopicsByQuery($sQuery, $iPage, $iPerPage, $sSubQuery, $aClosedBlogsIdsForCurrentUser, $iBlogIdForSearch, $iFavoriteUserId)
+    {
+        $sql = '
       SELECT DISTINCT t.topic_id,
       CASE
         {WHEN ((LOWER(t.topic_title) REGEXP ?) AND (LOWER(tc.topic_text) REGEXP ?)) THEN 6} -- strict
@@ -59,68 +61,69 @@ class PluginSimplesearch_ModuleSimplesearch_MapperSimplesearch extends Mapper {
         )
       ORDER BY
         ' . (isset ($sSubQuery) ? 'weight DESC, ' : '')
-          . 't.' . implode (', t.', Config::Get ('plugin.simplesearch.Topics_Order')) . '
+            . 't.' . implode(', t.', Config::Get('plugin.simplesearch.Topics_Order')) . '
       LIMIT ?d, ?d
     ';
-    // maybe use LEFT JOIN for other topic types if them doesnt have content?
-    $iTotalCount = 0;
-    $aTopicsIds = array ();
-    $aMatching = array ();
-    
-    if ($aResult = $this -> oDb -> selectPage (
-          $iTotalCount,
-          $sql,
-          // relevance (weight)
-          (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // (title AND       // strict
-          (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // text)
-          (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // title
-          (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // text
-          
-          (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // (title AND       // not strict
-          (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // text)
-          (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // title
-          (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // text
-          // tables list
-          Config::Get ('db.table.topic'),
-          Config::Get ('db.table.topic_content'),
-          Config::Get ('db.table.blog'),
-          // if search in favorite list selected
-          ($iFavoriteUserId ? Config::Get ('db.table.favourite') : DBSIMPLE_SKIP),
-          ($iFavoriteUserId ? $iFavoriteUserId : DBSIMPLE_SKIP),
-          // public blog types list
-          array_merge (Config::Get ('plugin.simplesearch.Allowed_Blog_Types'), (array) ($iBlogIdForSearch ? 'close' : null)),
-          // if search in one blog selected
-          ($iBlogIdForSearch ? $iBlogIdForSearch : DBSIMPLE_SKIP),
-          // search in "close" blog type
-          !empty ($aClosedBlogsIdsForCurrentUser) ? array ('close') : array (null),
-          // "close" blog type ids
-          !empty ($aClosedBlogsIdsForCurrentUser) ? $aClosedBlogsIdsForCurrentUser : array (null),
-          // base search conditions vars setup
-          $sQuery,                                            // title            // strict
-          $sQuery,                                            // text
-          (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // title            // not strict
-          (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // text
-          // limit
-          ($iPage - 1) * $iPerPage,
-          $iPerPage
+        // maybe use LEFT JOIN for other topic types if them doesnt have content?
+        $iTotalCount = 0;
+        $aTopicsIds = array();
+        $aMatching = array();
+
+        if ($aResult = $this->oDb->selectPage(
+            $iTotalCount,
+            $sql,
+            // relevance (weight)
+            (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // (title AND       // strict
+            (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // text)
+            (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // title
+            (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // text
+
+            (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // (title AND       // not strict
+            (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // text)
+            (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // title
+            (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // text
+            // tables list
+            Config::Get('db.table.topic'),
+            Config::Get('db.table.topic_content'),
+            Config::Get('db.table.blog'),
+            // if search in favorite list selected
+            ($iFavoriteUserId ? Config::Get('db.table.favourite') : DBSIMPLE_SKIP),
+            ($iFavoriteUserId ? $iFavoriteUserId : DBSIMPLE_SKIP),
+            // public blog types list
+            array_merge(Config::Get('plugin.simplesearch.Allowed_Blog_Types'), (array)($iBlogIdForSearch ? 'close' : null)),
+            // if search in one blog selected
+            ($iBlogIdForSearch ? $iBlogIdForSearch : DBSIMPLE_SKIP),
+            // search in "close" blog type
+            !empty ($aClosedBlogsIdsForCurrentUser) ? array('close') : array(null),
+            // "close" blog type ids
+            !empty ($aClosedBlogsIdsForCurrentUser) ? $aClosedBlogsIdsForCurrentUser : array(null),
+            // base search conditions vars setup
+            $sQuery,                                            // title            // strict
+            $sQuery,                                            // text
+            (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // title            // not strict
+            (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // text
+            // limit
+            ($iPage - 1) * $iPerPage,
+            $iPerPage
         )
-      ) {
-      foreach ($aResult as $curTopic) {
-        $aTopicsIds [] = $curTopic ['topic_id'];
-        $aMatching [] = $curTopic ['weight'];
-      }
+        ) {
+            foreach ($aResult as $curTopic) {
+                $aTopicsIds [] = $curTopic ['topic_id'];
+                $aMatching [] = $curTopic ['weight'];
+            }
+        }
+        return array(
+            'result' => $aTopicsIds,
+            'count' => $iTotalCount,
+            'matches' => $aMatching
+        );
     }
-    return array (
-      'result' => $aTopicsIds,
-      'count' => $iTotalCount,
-      'matches' => $aMatching
-    );
-  }
-  
-  // ---
-  
-  public function GetCommentsByQuery ($sQuery, $iPage, $iPerPage, $sSubQuery, $aClosedBlogsIdsForCurrentUser, $iBlogIdForSearch, $iFavoriteUserId) {
-    $sql = '
+
+    // ---
+
+    public function GetCommentsByQuery($sQuery, $iPage, $iPerPage, $sSubQuery, $aClosedBlogsIdsForCurrentUser, $iBlogIdForSearch, $iFavoriteUserId)
+    {
+        $sql = '
       SELECT DISTINCT c.comment_id,
       CASE
         {WHEN (LOWER(c.comment_text) REGEXP ?) THEN 4} -- strict
@@ -161,57 +164,58 @@ class PluginSimplesearch_ModuleSimplesearch_MapperSimplesearch extends Mapper {
         )
       ORDER BY
         ' . (isset ($sSubQuery) ? 'weight DESC, ' : '')
-          . 'c.' . implode (', c.', Config::Get ('plugin.simplesearch.Comments_Order')) . '
+            . 'c.' . implode(', c.', Config::Get('plugin.simplesearch.Comments_Order')) . '
       LIMIT ?d, ?d
     ';
-    $iTotalCount = 0;
-    $aCommentsIds = array ();
-    $aMatching = array ();
-    
-    if ($aResult = $this -> oDb -> selectPage (
-          $iTotalCount,
-          $sql,
-          // relevance (weight)
-          (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // strict
-          (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // not strict
-          // tables list
-          Config::Get ('db.table.comment'),
-          Config::Get ('db.table.blog'),
-          // if search in favorite list selected
-          ($iFavoriteUserId ? Config::Get ('db.table.favourite') : DBSIMPLE_SKIP),
-          ($iFavoriteUserId ? $iFavoriteUserId : DBSIMPLE_SKIP),
-          // public blog types list
-          array_merge (Config::Get ('plugin.simplesearch.Allowed_Blog_Types'), (array) ($iBlogIdForSearch ? 'close' : null)),
-          // if search in one blog selected
-          ($iBlogIdForSearch ? $iBlogIdForSearch : DBSIMPLE_SKIP),
-          // search in "close" blog type
-          !empty ($aClosedBlogsIdsForCurrentUser) ? array ('close') : array (null),
-          // "close" blog type ids
-          !empty ($aClosedBlogsIdsForCurrentUser) ? $aClosedBlogsIdsForCurrentUser : array (null),
-          // base search conditions vars setup
-          $sQuery,                                            // strict
-          (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // not strict
-          // limit
-          ($iPage - 1) * $iPerPage,
-          $iPerPage
+        $iTotalCount = 0;
+        $aCommentsIds = array();
+        $aMatching = array();
+
+        if ($aResult = $this->oDb->selectPage(
+            $iTotalCount,
+            $sql,
+            // relevance (weight)
+            (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // strict
+            (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // not strict
+            // tables list
+            Config::Get('db.table.comment'),
+            Config::Get('db.table.blog'),
+            // if search in favorite list selected
+            ($iFavoriteUserId ? Config::Get('db.table.favourite') : DBSIMPLE_SKIP),
+            ($iFavoriteUserId ? $iFavoriteUserId : DBSIMPLE_SKIP),
+            // public blog types list
+            array_merge(Config::Get('plugin.simplesearch.Allowed_Blog_Types'), (array)($iBlogIdForSearch ? 'close' : null)),
+            // if search in one blog selected
+            ($iBlogIdForSearch ? $iBlogIdForSearch : DBSIMPLE_SKIP),
+            // search in "close" blog type
+            !empty ($aClosedBlogsIdsForCurrentUser) ? array('close') : array(null),
+            // "close" blog type ids
+            !empty ($aClosedBlogsIdsForCurrentUser) ? $aClosedBlogsIdsForCurrentUser : array(null),
+            // base search conditions vars setup
+            $sQuery,                                            // strict
+            (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // not strict
+            // limit
+            ($iPage - 1) * $iPerPage,
+            $iPerPage
         )
-      ) {
-      foreach ($aResult as $curComment) {
-        $aCommentsIds [] = $curComment ['comment_id'];
-        $aMatching [] = $curComment ['weight'];
-      }
+        ) {
+            foreach ($aResult as $curComment) {
+                $aCommentsIds [] = $curComment ['comment_id'];
+                $aMatching [] = $curComment ['weight'];
+            }
+        }
+        return array(
+            'result' => $aCommentsIds,
+            'count' => $iTotalCount,
+            'matches' => $aMatching
+        );
     }
-    return array (
-      'result' => $aCommentsIds,
-      'count' => $iTotalCount,
-      'matches' => $aMatching
-    );
-  }
-  
-  // ---
-  
-  public function GetPeopleByQuery ($sQuery, $iPage, $iPerPage) {
-    $sql = '
+
+    // ---
+
+    public function GetPeopleByQuery($sQuery, $iPage, $iPerPage)
+    {
+        $sql = '
       SELECT user_id,
       CASE
         WHEN (LOWER(user_login) REGEXP ?) THEN 1
@@ -238,50 +242,51 @@ class PluginSimplesearch_ModuleSimplesearch_MapperSimplesearch extends Mapper {
           (LOWER(user_profile_about) REGEXP ?)
         )
       ORDER BY
-        ' . implode (', ', Config::Get ('plugin.simplesearch.People_Order')) . '
+        ' . implode(', ', Config::Get('plugin.simplesearch.People_Order')) . '
       LIMIT ?d, ?d
     ';
-    $iTotalCount = 0;
-    $aPeopleIds = array ();
-    $aMatching = array ();
-    
-    if ($aResult = $this -> oDb -> selectPage (
-          $iTotalCount,
-          $sql,
-          $sQuery,
-          $sQuery,
-          $sQuery,
-          $sQuery,
-          $sQuery,
-          // tables list
-          Config::Get ('db.table.user'),
-          
-          $sQuery,
-          $sQuery,
-          $sQuery,
-          $sQuery,
-          $sQuery,
-          // limit
-          ($iPage - 1) * $iPerPage,
-          $iPerPage
+        $iTotalCount = 0;
+        $aPeopleIds = array();
+        $aMatching = array();
+
+        if ($aResult = $this->oDb->selectPage(
+            $iTotalCount,
+            $sql,
+            $sQuery,
+            $sQuery,
+            $sQuery,
+            $sQuery,
+            $sQuery,
+            // tables list
+            Config::Get('db.table.user'),
+
+            $sQuery,
+            $sQuery,
+            $sQuery,
+            $sQuery,
+            $sQuery,
+            // limit
+            ($iPage - 1) * $iPerPage,
+            $iPerPage
         )
-      ) {
-      foreach ($aResult as $curUser) {
-        $aPeopleIds [] = $curUser ['user_id'];
-        $aMatching [] = $curUser ['matchnum'];
-      }
+        ) {
+            foreach ($aResult as $curUser) {
+                $aPeopleIds [] = $curUser ['user_id'];
+                $aMatching [] = $curUser ['matchnum'];
+            }
+        }
+        return array(
+            'result' => $aPeopleIds,
+            'count' => $iTotalCount,
+            'matches' => $aMatching
+        );
     }
-    return array (
-      'result' => $aPeopleIds,
-      'count' => $iTotalCount,
-      'matches' => $aMatching
-    );
-  }
-  
-  // ---
-  
-  public function GetBlogsByQuery ($sQuery, $iPage, $iPerPage, $sSubQuery, $aClosedBlogsIdsForCurrentUser, $iBlogIdForSearch) {
-    $sql = '
+
+    // ---
+
+    public function GetBlogsByQuery($sQuery, $iPage, $iPerPage, $sSubQuery, $aClosedBlogsIdsForCurrentUser, $iBlogIdForSearch)
+    {
+        $sql = '
       SELECT DISTINCT b.blog_id,
       CASE
         {WHEN ((LOWER(b.blog_title) REGEXP ?) AND (LOWER(b.blog_description) REGEXP ?)) THEN 6} -- strict
@@ -312,65 +317,66 @@ class PluginSimplesearch_ModuleSimplesearch_MapperSimplesearch extends Mapper {
         )
       ORDER BY
         ' . (isset ($sSubQuery) ? 'weight DESC, ' : '')
-          . 'b.' . implode (', b.', Config::Get ('plugin.simplesearch.Blogs_Order')) . '
+            . 'b.' . implode(', b.', Config::Get('plugin.simplesearch.Blogs_Order')) . '
       LIMIT ?d, ?d
     ';
-    $iTotalCount = 0;
-    $aBlogsIds = array ();
-    $aMatching = array ();
-    
-    if ($aResult = $this -> oDb -> selectPage (
-          $iTotalCount,
-          $sql,
-          // relevance (weight)
-          (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // (title AND       // strict
-          (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // description)
-          (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // title
-          (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // description
-          
-          (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // (title AND       // not strict
-          (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // description)
-          (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // title
-          (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // description
-          // tables list
-          Config::Get ('db.table.blog'),
-          // public blog types list
-          array_merge (
-            array_diff (Config::Get ('plugin.simplesearch.Allowed_Blog_Types'), array ('personal')),      // ATT! w/o personal blog type
-            (array) ($iBlogIdForSearch ? 'close' : null)
-          ),
-          // if search in one blog selected
-          ($iBlogIdForSearch ? $iBlogIdForSearch : DBSIMPLE_SKIP),
-          // search in "close" blog type
-          !empty ($aClosedBlogsIdsForCurrentUser) ? array ('close') : array (null),
-          // "close" blog type ids
-          !empty ($aClosedBlogsIdsForCurrentUser) ? $aClosedBlogsIdsForCurrentUser : array (null),
-          // base search conditions vars setup
-          $sQuery,                                            // title            // strict
-          $sQuery,                                            // description
-          (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // title            // not strict
-          (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // description
-          // limit
-          ($iPage - 1) * $iPerPage,
-          $iPerPage
+        $iTotalCount = 0;
+        $aBlogsIds = array();
+        $aMatching = array();
+
+        if ($aResult = $this->oDb->selectPage(
+            $iTotalCount,
+            $sql,
+            // relevance (weight)
+            (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // (title AND       // strict
+            (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // description)
+            (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // title
+            (isset ($sSubQuery) ? $sQuery : DBSIMPLE_SKIP),     // description
+
+            (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // (title AND       // not strict
+            (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // description)
+            (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // title
+            (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // description
+            // tables list
+            Config::Get('db.table.blog'),
+            // public blog types list
+            array_merge(
+                array_diff(Config::Get('plugin.simplesearch.Allowed_Blog_Types'), array('personal')),      // ATT! w/o personal blog type
+                (array)($iBlogIdForSearch ? 'close' : null)
+            ),
+            // if search in one blog selected
+            ($iBlogIdForSearch ? $iBlogIdForSearch : DBSIMPLE_SKIP),
+            // search in "close" blog type
+            !empty ($aClosedBlogsIdsForCurrentUser) ? array('close') : array(null),
+            // "close" blog type ids
+            !empty ($aClosedBlogsIdsForCurrentUser) ? $aClosedBlogsIdsForCurrentUser : array(null),
+            // base search conditions vars setup
+            $sQuery,                                            // title            // strict
+            $sQuery,                                            // description
+            (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // title            // not strict
+            (isset ($sSubQuery) ? $sSubQuery : DBSIMPLE_SKIP),  // description
+            // limit
+            ($iPage - 1) * $iPerPage,
+            $iPerPage
         )
-      ) {
-      foreach ($aResult as $curBlog) {
-        $aBlogsIds [] = $curBlog ['blog_id'];
-        $aMatching [] = $curBlog ['weight'];
-      }
+        ) {
+            foreach ($aResult as $curBlog) {
+                $aBlogsIds [] = $curBlog ['blog_id'];
+                $aMatching [] = $curBlog ['weight'];
+            }
+        }
+        return array(
+            'result' => $aBlogsIds,
+            'count' => $iTotalCount,
+            'matches' => $aMatching
+        );
     }
-    return array (
-      'result' => $aBlogsIds,
-      'count' => $iTotalCount,
-      'matches' => $aMatching
-    );
-  }
-  
-  // ---
-  
-  public function GetTopicsByTagLikeByQuery ($sQuery, $iPage, $iPerPage, $aClosedBlogsIdsForCurrentUser, $iBlogIdForSearch, $iFavoriteUserId) {
-    $sql = '
+
+    // ---
+
+    public function GetTopicsByTagLikeByQuery($sQuery, $iPage, $iPerPage, $aClosedBlogsIdsForCurrentUser, $iBlogIdForSearch, $iFavoriteUserId)
+    {
+        $sql = '
       SELECT DISTINCT tt.topic_id
       FROM
         ?# as tt,
@@ -398,43 +404,41 @@ class PluginSimplesearch_ModuleSimplesearch_MapperSimplesearch extends Mapper {
         tt.topic_id DESC
       LIMIT ?d, ?d
     ';
-    $iTotalCount = 0;
-    $aTopicsIds = array ();
-    
-    if ($aResult = $this -> oDb -> selectPage (
-          $iTotalCount,
-          $sql,
-          // tables list
-          Config::Get ('db.table.topic_tag'),
-          Config::Get ('db.table.blog'),
-          // if search in favorite list selected
-          ($iFavoriteUserId ? Config::Get ('db.table.favourite') : DBSIMPLE_SKIP),
-          '%' . $sQuery . '%',
-          // if search in favorite list selected # 2nd part, ATT! splitted into two parts with search query between
-          ($iFavoriteUserId ? $iFavoriteUserId : DBSIMPLE_SKIP),
-          // public blog types list
-          array_merge (Config::Get ('plugin.simplesearch.Allowed_Blog_Types'), (array) ($iBlogIdForSearch ? 'close' : null)),
-          // if search in one blog selected
-          ($iBlogIdForSearch ? $iBlogIdForSearch : DBSIMPLE_SKIP),
-          // search in "close" blog type
-          !empty ($aClosedBlogsIdsForCurrentUser) ? array ('close') : array (null),
-          // "close" blog type ids
-          !empty ($aClosedBlogsIdsForCurrentUser) ? $aClosedBlogsIdsForCurrentUser : array (null),
-          // limit
-          ($iPage - 1) * $iPerPage,
-          $iPerPage
+        $iTotalCount = 0;
+        $aTopicsIds = array();
+
+        if ($aResult = $this->oDb->selectPage(
+            $iTotalCount,
+            $sql,
+            // tables list
+            Config::Get('db.table.topic_tag'),
+            Config::Get('db.table.blog'),
+            // if search in favorite list selected
+            ($iFavoriteUserId ? Config::Get('db.table.favourite') : DBSIMPLE_SKIP),
+            '%' . $sQuery . '%',
+            // if search in favorite list selected # 2nd part, ATT! splitted into two parts with search query between
+            ($iFavoriteUserId ? $iFavoriteUserId : DBSIMPLE_SKIP),
+            // public blog types list
+            array_merge(Config::Get('plugin.simplesearch.Allowed_Blog_Types'), (array)($iBlogIdForSearch ? 'close' : null)),
+            // if search in one blog selected
+            ($iBlogIdForSearch ? $iBlogIdForSearch : DBSIMPLE_SKIP),
+            // search in "close" blog type
+            !empty ($aClosedBlogsIdsForCurrentUser) ? array('close') : array(null),
+            // "close" blog type ids
+            !empty ($aClosedBlogsIdsForCurrentUser) ? $aClosedBlogsIdsForCurrentUser : array(null),
+            // limit
+            ($iPage - 1) * $iPerPage,
+            $iPerPage
         )
-      ) {
-      foreach ($aResult as $curTopic) {
-        $aTopicsIds [] = $curTopic ['topic_id'];
-      }
+        ) {
+            foreach ($aResult as $curTopic) {
+                $aTopicsIds [] = $curTopic ['topic_id'];
+            }
+        }
+        return array(
+            'result' => $aTopicsIds,
+            'count' => $iTotalCount
+        );
     }
-    return array (
-      'result' => $aTopicsIds,
-      'count' => $iTotalCount
-    );
-  }
 
 }
-
-?>
