@@ -10,12 +10,25 @@
 
 class PluginSimplesearch_HookSimplesearch extends Hook
 {
+    const ConfigKey = 'simplesearch';
+    const HooksArray = [
+        'engine_init_complete'  =>  'AddStylesAndJS',
+        'template_body_begin'   =>  'BodyBegin',
+        'template_blog_info'    =>  'BlogInfo',
+    ];
+
 
     public function RegisterHook()
     {
-        $this->AddHook('engine_init_complete', 'AddStylesAndJS');
-        $this->AddHook('template_body_begin', 'BodyBegin');
-        $this->AddHook('template_blog_info', 'BlogInfo');
+        $plugin_config_key = $this::ConfigKey;
+        foreach ($this::HooksArray as $hook => $callback) {
+            $this->AddHook(
+                $hook,
+                $callback,
+                __CLASS__,
+                Config::Get("plugin.{$plugin_config_key}.hook_priority.{$hook}") ?? 1
+            );
+        }
     }
 
     // ---
